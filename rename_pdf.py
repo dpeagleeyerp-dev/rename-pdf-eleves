@@ -47,14 +47,14 @@ for file in os.listdir(FOLDER):
             # 🔍 NOM
             nom_match = re.search(
                 r"Nom\s+de\s+famille\s*:\s*([A-Z\-]+)",
-                bloc,
+                full_text,
                 re.IGNORECASE
             )
 
             # 🔍 PRENOM
             prenom_match = re.search(
                 r"Pr[ée]nom(\s*1)?\s*:\s*([A-Za-z\-]+)",
-                bloc,
+                full_text,
                 re.IGNORECASE
             )
 
