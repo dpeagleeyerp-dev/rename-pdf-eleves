@@ -13,7 +13,7 @@ for file in os.listdir(folder):
         path = os.path.join(folder, file)
 
         try:
-            images = convert_from_path(path)
+            images = convert_from_path(path, poppler_path=r"C:\poppler\Library\bin")
             full_text = ""
 
             for img in images:
