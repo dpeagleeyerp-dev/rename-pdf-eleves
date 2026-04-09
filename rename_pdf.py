@@ -4,7 +4,7 @@ import pytesseract
 import re
 
 # 👉 IMPORTANT : chemin vers Tesseract
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = r""C:\Users\ajallaguier.OCRE\AppData\Local\Programs\Tesseract-OCR\tesseract.exe""
 
 folder = "pdfs"  # dossier où tu mets tes fichiers
 
