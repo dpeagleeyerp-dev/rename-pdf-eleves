@@ -28,13 +28,13 @@ for file in os.listdir(folder):
 
             # 🔍 Trouver bloc "Identité de l’élève"
             match_bloc = re.search(
-                r"Identit[eé]\s+de\s+l[’']?él[eè]ve(.*?)REPRÉSENTANTS L[ÉE]GAUX",
+                r"IDENTIT[EÉ]\s+DE\s+L['’]ELEVE(.*?)REPRÉSENTANTS L[ÉE]GAUX",
                 full_text,
                 re.IGNORECASE
             )
 
             if not match_bloc:
-                raise Exception("Bloc élève introuvable")
+                raise Exception("Bloc IDENTITE élève introuvable")
 
             bloc = match_bloc.group(1)
 
