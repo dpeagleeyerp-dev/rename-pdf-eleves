@@ -1,66 +1,61 @@
 import os
-from pdf2image import convert_from_path
-import pytesseract
+import shutil
 import re
 
-# 🔧 CONFIGURATION (tes chemins)
-pytesseract.pytesseract.tesseract_cmd = r"C:\Users\ajallaguier.OCRE\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
-os.environ["TESSDATA_PREFIX"] = r"C:\Users\ajallaguier.OCRE\AppData\Local\Programs\Tesseract-OCR\tessdata"
+# 📂 Dossier racine
+SOURCE_ROOT = "C:\Users\ajallaguier.OCRE\Documents\Monprojet2"
 
-POPPLER_PATH = r"C:\poppler\Library\bin"
-FOLDER = "pdfs"
+# 📁 Dossier de sortie
+DEST_ROOT = ""C:\Users\ajallaguier.OCRE\Documents\SORTIE""
 
-print("🚀 Démarrage du traitement...\n")
+os.makedirs(DEST_ROOT, exist_ok=True)
 
-for file in os.listdir(FOLDER):
-    if file.lower().endswith(".pdf"):
-        path = os.path.join(FOLDER, file)
+print("🚀 Regroupement par NOM en cours...\n")
 
-        try:
-            print(f"📄 Traitement : {file}")
+for root, dirs, files in os.walk(SOURCE_ROOT):
+    for file in files:
+        if file.lower().endswith(".pdf"):
 
-            # 📄 Convertir PDF → images
-            images = convert_from_path(path, poppler_path=POPPLER_PATH)
+            path = os.path.join(root, file)
 
-            full_text = ""
-            for img in images:
-                text = pytesseract.image_to_string(img, lang='fra')
-                full_text += text + "\n"
+            try:
+                print(f"📄 Analyse : {file}")
 
-            # 🧹 Nettoyage OCR
-            full_text = full_text.replace("\n", " ")
-            full_text = re.sub(r"\s+", " ", full_text)
+                filename = file.upper()
 
-            # 🔍 Recherche NOM (version ultra tolérante)
-            nom_match = re.search(
-                r"Nom\s+de\s+famille[\*\s]*(?:\(\d+\))?\s*:\s*([A-Z\-]+)",
-                full_text,
-                re.IGNORECASE
-            )
+                # 🔍 Extraction NOM (avant _ OU espace OU fin)
+                match = re.match(r"([A-Z\-]+)", filename)
 
-            if not nom_match:
-                print(f"⚠️ IGNORÉ : nom introuvable\n")
-                continue
+                if not match:
+                    print("⚠️ IGNORÉ : nom non reconnu\n")
+                    continue
 
-            nom = nom_match.group(1).upper()
+                nom = match.group(1)
 
-            new_name = f"{nom}_RENS_BENEF.pdf"
-            new_path = os.path.join(FOLDER, new_name)
+                # 📁 Créer dossier NOM
+                dossier_nom = os.path.join(DEST_ROOT, nom)
+                os.makedirs(dossier_nom, exist_ok=True)
 
-            # 🔁 Gestion des doublons
-            counter = 1
-            base_name = f"{nom}_RENS_BENEF"
-            while os.path.exists(new_path):
-                new_name = f"{base_name}_{counter}.pdf"
-                new_path = os.path.join(FOLDER, new_name)
-                counter += 1
+                # 📂 Copier fichier
+                new_path = os.path.join(dossier_nom, file)
 
-            os.rename(path, new_path)
+                # 🔁 éviter écrasement
+                counter = 1
+                base_name = file.replace(".pdf", "")
 
-            print(f"✅ RENOMMÉ : {new_name}\n")
+                while os.path.exists(new_path):
+                    new_path = os.path.join(
+                        dossier_nom,
+                        f"{base_name}_{counter}.pdf"
+                    )
+                    counter += 1
 
-        except Exception as e:
-            print(f"❌ ERREUR : {file} → {e}\n")
+                shutil.copy2(path, new_path)
+
+                print(f"✅ Copié vers : {nom}\n")
+
+            except Exception as e:
+                print(f"❌ ERREUR : {file} → {e}\n")
 
 print("🎉 Terminé !")
 input("Appuie sur Entrée pour fermer...")
