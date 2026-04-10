@@ -3,10 +3,10 @@ import shutil
 import re
 
 # 📂 Dossier racine
-SOURCE_ROOT = "C:\Users\ajallaguier.OCRE\Documents\Monprojet2"
+SOURCE_ROOT = r"C:\Users\ajallaguier.OCRE\Documents\Monprojet2"
 
 # 📁 Dossier de sortie
-DEST_ROOT = "C:\Users\ajallaguier.OCRE\Documents\SORTIE"
+DEST_ROOT = r"C:\Users\ajallaguier.OCRE\Documents\SORTIE"
 
 os.makedirs(DEST_ROOT, exist_ok=True)
 
