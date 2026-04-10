@@ -31,47 +31,29 @@ for file in os.listdir(FOLDER):
             full_text = full_text.replace("\n", " ")
             full_text = re.sub(r"\s+", " ", full_text)
 
-            # 🔍 Bloc IDENTITE UNIQUEMENT
-            match_bloc = re.search(
-                r"IDENTIT[EÉ]\s+DE\s+L['’]ELEVE(.*?)REPRÉSENTANTS L[ÉE]GAUX",
-                full_text,
-                re.IGNORECASE
-            )
-
-            if not match_bloc:
-                print(f"⚠️ IGNORÉ : bloc élève introuvable\n")
-                continue
-
-            bloc = match_bloc.group(1)
-
-            # 🔍 NOM
+            # 🔍 Recherche NOM uniquement (dans tout le texte)
             nom_match = re.search(
                 r"Nom\s+de\s+famille\s*:\s*([A-Z\-]+)",
                 full_text,
                 re.IGNORECASE
             )
 
-            # 🔍 PRENOM
-            prenom_match = re.search(
-                r"Pr[ée]nom(\s*1)?\s*:\s*([A-Za-z\-]+)",
-                full_text,
-                re.IGNORECASE
-            )
-
-            if not nom_match or not prenom_match:
-                print(f"⚠️ IGNORÉ : nom/prénom introuvable\n")
+            if not nom_match:
+                print(f"⚠️ IGNORÉ : nom introuvable\n")
                 continue
 
             nom = nom_match.group(1).upper()
-            prenom = prenom_match.group(2).capitalize()
 
-            new_name = f"{nom}_{prenom}_RENS_BENEF.pdf"
+            new_name = f"{nom}_RENS_BENEF.pdf"
             new_path = os.path.join(FOLDER, new_name)
 
-            # ⚠️ éviter écrasement
-            if os.path.exists(new_path):
-                print(f"⚠️ EXISTE DÉJÀ : {new_name}\n")
-                continue
+            # 🔁 Gestion des doublons (ajoute _1, _2, etc.)
+            counter = 1
+            base_name = f"{nom}_RENS_BENEF"
+            while os.path.exists(new_path):
+                new_name = f"{base_name}_{counter}.pdf"
+                new_path = os.path.join(FOLDER, new_name)
+                counter += 1
 
             os.rename(path, new_path)
 
