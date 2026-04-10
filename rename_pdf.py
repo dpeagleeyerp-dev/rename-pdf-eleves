@@ -31,9 +31,9 @@ for file in os.listdir(FOLDER):
             full_text = full_text.replace("\n", " ")
             full_text = re.sub(r"\s+", " ", full_text)
 
-            # 🔍 Recherche NOM uniquement (dans tout le texte)
+            # 🔍 Recherche NOM (version ultra tolérante)
             nom_match = re.search(
-                r"Nom\s+de\s+famille\s*:\s*([A-Z\-]+)",
+                r"Nom\s+de\s+famille[\*\s]*(?:\(\d+\))?\s*:\s*([A-Z\-]+)",
                 full_text,
                 re.IGNORECASE
             )
@@ -47,7 +47,7 @@ for file in os.listdir(FOLDER):
             new_name = f"{nom}_RENS_BENEF.pdf"
             new_path = os.path.join(FOLDER, new_name)
 
-            # 🔁 Gestion des doublons (ajoute _1, _2, etc.)
+            # 🔁 Gestion des doublons
             counter = 1
             base_name = f"{nom}_RENS_BENEF"
             while os.path.exists(new_path):
