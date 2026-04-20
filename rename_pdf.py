@@ -12,30 +12,26 @@ DEST_ROOT = r"C:\Users\ajallaguier.OCRE\Documents\SORTIE2"
 os.makedirs(DEST_ROOT, exist_ok=True)
 
 def extraire_nom_du_pdf(chemin_pdf):
-    """
-    Ouvre le PDF, lit la première page et cherche le NOM après madame/monsieur.
-    """
     try:
         doc = fitz.open(chemin_pdf)
-        if len(doc) == 0:
-            return None
-            
-        # On extrait le texte de la première page uniquement
-        texte = doc[0].get_text()
+        # On extrait le texte brut et on retire les espaces superflus
+        texte = ""
+        for page in doc[:1]:
+            texte += page.get_text("text") 
         doc.close()
 
-        # REGEX AFFINÉE :
-        # 1. (?:madame|monsieur) -> Cherche l'un ou l'autre sans le capturer
-        # 2. [\s,]+ -> Saute les espaces et les virgules qui suivent
-        # 3. ([A-ZÀ-ÿ\-]+) -> Capture le NOM (majuscules, accents et tirets)
-        match = re.search(r"(?:madame|monsieur)[\s,]+([A-ZÀ-ÿ\-]{2,})", texte, re.IGNORECASE)
+        # Nettoyage : on remplace les sauts de ligne par des espaces pour que la regex ne bloque pas
+        texte_propre = " ".join(texte.split())
+
+        # REGEX ULTRA-LARGE :
+        # Cherche madame ou monsieur, puis saute tout jusqu'au premier mot en MAJUSCULES d'au moins 3 lettres
+        match = re.search(r"(?:madame|monsieur)[\s,]+.*?([A-ZÀ-ÿ\-]{3,})", texte_propre, re.IGNORECASE)
         
         if match:
-            # On nettoie et on met en majuscules (ex: ABDELLAOUI)
             return match.group(1).strip().upper()
             
     except Exception as e:
-        print(f"❌ Erreur lors de la lecture de {os.path.basename(chemin_pdf)} : {e}")
+        print(f"❌ Erreur : {e}")
     return None
 
 print("🚀 Démarrage de l'automatisation...")
