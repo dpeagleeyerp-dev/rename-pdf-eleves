@@ -1,4 +1,2 @@
-pytesseract
-pdf2image
 pymupdf
-pyinstaller
+pytesseract
