@@ -2,71 +2,76 @@ import os
 import shutil
 import re
 import fitz  # PyMuPDF
+import pytesseract
+
+# --- CONFIGURATION TESSERACT ---
+# Indique ici le chemin exact vers l'exécutable tesseract.exe
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 SOURCE_ROOT = r"C:\Users\ajallaguier.OCRE\Documents\Monprojet3"
-DEST_ROOT = r"C:\Users\ajallaguier.OCRE\Documents\SORTIE2"
+DEST_ROOT = r"C:\Users\ajallaguier.OCRE\Documents\SORTIE_FINAL"
 
 os.makedirs(DEST_ROOT, exist_ok=True)
 
-def extraire_nom_du_pdf(chemin_pdf):
+def extraire_nom_ocr_direct(chemin_pdf):
     try:
+        # 1. Ouvrir le PDF et transformer la page 1 en image (pixmap)
         doc = fitz.open(chemin_pdf)
-        # Extraction de la première page avec nettoyage des blancs
-        texte = ""
-        for page in doc[:1]:
-            texte += page.get_text("text")
+        page = doc[0]
+        # On augmente la résolution (zoom=2) pour que Tesseract lise mieux
+        pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+        
+        # 2. Transformer l'image en texte via Tesseract
+        # On convertit les données brutes de l'image en texte
+        img_data = pix.tobytes("png")
+        texte = pytesseract.image_to_string(img_data, lang='fra')
         doc.close()
 
-        # On transforme tout en une seule ligne propre sans sauts de ligne
+        # 3. Nettoyer et chercher le nom
         texte_ligne = " ".join(texte.split())
-
-        # REGEX OPTIMISÉE pour : "madame/monsieur, NOM" ou "madame/monsieur NOM"
-        # On cherche le mot clé, puis on accepte n'importe quel caractère non-alphabétique 
-        # (virgule, espace, slash) avant de capturer le NOM en majuscules.
-        match = re.search(r"(?:madame|monsieur)[^a-zA-Z]+([A-ZÀ-ÿ\-]{3,})", texte_ligne, re.IGNORECASE)
+        
+        # Regex : Cherche Madame/Monsieur puis le premier mot en MAJUSCULES (3+ lettres)
+        match = re.search(r"(?:madame|monsieur)[^\w]+([A-ZÀ-ÿ\-]{3,})", texte_ligne, re.IGNORECASE)
         
         if match:
             return match.group(1).strip().upper()
             
     except Exception as e:
-        print(f"❌ Erreur lecture : {e}")
+        print(f"❌ Erreur sur {os.path.basename(chemin_pdf)} : {e}")
     return None
 
-print("🚀 Lancement du scan des 253 fichiers...\n")
+print("🚀 Analyse OCR en cours (méthode directe)...")
+print("Cela peut prendre quelques secondes par fichier.\n")
 
 stats_ok = 0
 stats_fail = 0
 
-for root, dirs, files in os.walk(SOURCE_ROOT):
-    for file in files:
-        if file.lower().endswith(".pdf"):
-            chemin_abs = os.path.join(root, file)
+for file in os.listdir(SOURCE_ROOT):
+    if file.lower().endswith(".pdf"):
+        chemin_abs = os.path.join(SOURCE_ROOT, file)
+        
+        nom = extraire_nom_ocr_direct(chemin_abs)
+        
+        if nom:
+            dossier_final = os.path.join(DEST_ROOT, nom)
+            os.makedirs(dossier_final, exist_ok=True)
             
-            nom = extraire_nom_du_pdf(chemin_abs)
+            dest_path = os.path.join(dossier_final, f"{nom}_AUTOR_PAR.pdf")
             
-            if nom:
-                dossier_final = os.path.join(DEST_ROOT, nom)
-                os.makedirs(dossier_final, exist_ok=True)
-                
-                # Format: NOM_AUTOR_PAR.pdf
-                nouveau_nom = f"{nom}_AUTOR_PAR.pdf"
-                dest_path = os.path.join(dossier_final, nouveau_nom)
-                
-                # Gestion doublons
-                c = 1
-                while os.path.exists(dest_path):
-                    dest_path = os.path.join(dossier_final, f"{nom}_AUTOR_PAR_{c}.pdf")
-                    c += 1
-                
-                shutil.copy2(chemin_abs, dest_path)
-                print(f"✅ {nom} trouvé dans {file}")
-                stats_ok += 1
-            else:
-                print(f"⚠️ NOM NON TROUVÉ : {file}")
-                stats_fail += 1
+            # Gestion doublons
+            c = 1
+            while os.path.exists(dest_path):
+                dest_path = os.path.join(dossier_final, f"{nom}_AUTOR_PAR_{c}.pdf")
+                c += 1
+            
+            shutil.copy2(chemin_abs, dest_path)
+            print(f"✅ Trouvé : {nom} (Fichier: {file})")
+            stats_ok += 1
+        else:
+            print(f"⚠️ Échec : {file}")
+            stats_fail += 1
 
 print(f"\n--- BILAN ---")
-print(f"✅ Succès : {stats_ok}")
-print(f"⚠️ Échecs : {stats_fail}")
-
+print(f"✅ Réussis : {stats_ok}")
+print(f"⚠️ Échecs  : {stats_fail}")
 input("\nAppuie sur Entrée pour quitter...")
