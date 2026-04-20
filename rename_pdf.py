@@ -6,7 +6,7 @@ import pytesseract
 
 # --- CONFIGURATION TESSERACT ---
 # Indique ici le chemin exact vers l'exécutable tesseract.exe
-pytesseract.pytesseract.tesseract_cmd = r'"C:\Users\ajallaguier.OCRE\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Users\ajallaguier.OCRE\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
 
 SOURCE_ROOT = r"C:\Users\ajallaguier.OCRE\Documents\Monprojet3"
 DEST_ROOT = r"C:\Users\ajallaguier.OCRE\Documents\SORTIE_FINAL"
