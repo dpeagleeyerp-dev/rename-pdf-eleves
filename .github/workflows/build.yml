@@ -8,6 +8,10 @@ jobs:
   build:
     runs-on: windows-latest
 
+    env:
+      # Force l'utilisation de Node 24 pour éviter les avertissements de dépréciation
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -19,14 +23,22 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+        if (Test-Path requirements.txt) { pip install -r requirements.txt }
 
     - name: Build EXE
       run: |
-        pyinstaller --onefile rename_pdf.py
+        # On vérifie si le fichier existe avant de lancer PyInstaller pour éviter l'erreur "File not found"
+        if (Test-Path rename_pdf.py) {
+          pyinstaller --onefile --noconsole rename_pdf.py
+        } else {
+          Write-Error "Le fichier rename_pdf.py est introuvable à la racine du dépôt GitHub !"
+          exit 1
+        }
 
     - name: Upload EXE
       uses: actions/upload-artifact@v4
       with:
         name: rename-pdf-exe
-        path: dist/rename_pdf.exe
+        path: dist/*.exe
