@@ -9,7 +9,6 @@ jobs:
     runs-on: windows-latest
 
     env:
-      # Force l'utilisation de Node 24 pour éviter les avertissements de dépréciation
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
@@ -27,13 +26,20 @@ jobs:
         pip install pyinstaller
         if (Test-Path requirements.txt) { pip install -r requirements.txt }
 
+    - name: Install Poppler
+      run: |
+        choco install poppler -y
+
+    - name: Install Tesseract
+      run: |
+        choco install tesseract -y
+
     - name: Build EXE
       run: |
-        # On vérifie si le fichier existe avant de lancer PyInstaller pour éviter l'erreur "File not found"
         if (Test-Path rename_pdf.py) {
           pyinstaller --onefile --noconsole rename_pdf.py
         } else {
-          Write-Error "Le fichier rename_pdf.py est introuvable à la racine du dépôt GitHub !"
+          Write-Error "Le fichier rename_pdf.py est introuvable !"
           exit 1
         }
 
