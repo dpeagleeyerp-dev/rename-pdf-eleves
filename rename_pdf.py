@@ -33,13 +33,13 @@ for file in os.listdir(FOLDER):
 
             # 🔍 Recherche NOM dans phrase officielle
             match = re.search(
-                r"soussign[ée]\(e\)\s*(madame|monsieur)\s*,\s*([A-Z\-]+)",
+                r"(madame|monsieur)[^A-Z]{0,10}([A-Z\-]{3,})",
                 full_text,
                 re.IGNORECASE
             )
 
             if not match:
-                print("⚠️ IGNORÉ : phrase 'Je soussigné...' introuvable\n")
+                print(full_text[:500])
                 continue
 
             nom = match.group(2).upper()
