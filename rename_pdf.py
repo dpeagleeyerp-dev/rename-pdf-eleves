@@ -33,7 +33,7 @@ for file in os.listdir(FOLDER):
 
             # 🔍 Recherche NOM dans phrase officielle
             match = re.search(
-                r"(madame|monsieur)[^A-Z]{0,10}([A-Z\-]{3,})",
+                r"(madame|monsieur)\s*,\s*([A-Z\-]+)",
                 full_text,
                 re.IGNORECASE
             )
