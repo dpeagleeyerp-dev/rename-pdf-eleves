@@ -37,7 +37,7 @@ jobs:
     - name: Build EXE
       run: |
         if (Test-Path rename_pdf.py) {
-          pyinstaller --onefile --noconsole rename_pdf.py
+          pyinstaller --onefile rename_pdf.py
         } else {
           Write-Error "Le fichier rename_pdf.py est introuvable !"
           exit 1
